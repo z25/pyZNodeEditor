@@ -1,35 +1,12 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2014, ALDO HOEBEN
-# Copyright (c) 2012, STANISLAW ADASZEWSKI
-#All rights reserved.
-#
-#Redistribution and use in source and binary forms, with or without
-#modification, are permitted provided that the following conditions are met:
-#    * Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#    * Neither the name of STANISLAW ADASZEWSKI nor the
-#      names of its contributors may be used to endorse or promote products
-#      derived from this software without specific prior written permission.
-#
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-#ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-#WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-#DISCLAIMED. IN NO EVENT SHALL STANISLAW ADASZEWSKI BE LIABLE FOR ANY
-#DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-#(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-#LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-#ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-#(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-#SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-from PySide.QtCore import (Qt)
+from PySide.QtCore import (Qt, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette)
 from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
     QGraphicsScene, QGraphicsView)
+
+from zocp import ZOCP
+import zmq
 
 from qnodeseditor import QNodesEditor
 from qneblock import QNEBlock
@@ -39,8 +16,8 @@ class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
         super(QNEMainWindow, self).__init__(parent)
 
-        self.setMinimumSize(400,400)
-        self.setWindowTitle("Node Editor")
+        self.setMinimumSize(640,480)
+        self.setWindowTitle("ZOCP Node Editor")
 
         self.scene = QGraphicsScene(self)
         self.scene.setBackgroundBrush( QApplication.palette().window() )
@@ -56,41 +33,24 @@ class QNEMainWindow(QMainWindow):
         self.scale = 1
         self.installActions()
 
-        block = QNEBlock(None)
-        self.scene.addItem(block)
-        block.addPort("test", False, False, QNEPort.NamePort)
-        block.addPort("TestBlock", False, False, QNEPort.TypePort)
-        block.addInputPort("in1");
-        block.addInputPort("in2");
-        block.addInputPort("in3");
-        block.addOutputPort("out1");
-        block.addOutputPort("out2");
-        block.addOutputPort("out3");
-        block.addInputOutputPort("inout1");
-        block.addNonePort("none");
+        self.initZOCP()
 
-        block = block.clone()
-        block.setPos(150,0)
+        self.nodes = {}
 
-        block = block.clone()
-        block.setPos(150,160)
+
+    def closeEvent(self, *args):
+        self.zocp.stop()
 
 
     def installActions(self):
         quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
             statusTip="Exit the application", triggered=self.close)
 
-        addAct = QAction("&Add", self, shortcut="Ctrl+B",
-            statusTip="Add a block", triggered=self.addBlock)
-
         fileMenu = self.menuBar().addMenu("&File")
-        fileMenu.addAction(addAct)
-        fileMenu.addSeparator()
         fileMenu.addAction(quitAct)
 
         # for shortcuts
         self.view.addAction(quitAct)
-        self.view.addAction(addAct)
 
         selectAllAct = QAction("Select &All", self, shortcut="Ctrl+A",
             triggered=self.nodesEditor.selectAll)
@@ -127,20 +87,6 @@ class QNEMainWindow(QMainWindow):
         self.view.addAction(zoomResetAct)
 
 
-
-    def addBlock(self):
-        import random
-        import math
-
-        block = QNEBlock(None)
-
-        self.scene.addItem(block)
-        names = ["Vin", "Voutsadfasdf", "Imin", "Imax", "mul", "add", "sub", "div", "Conv", "FFT"]
-        for i in range(0,math.floor(random.uniform(3,8))):
-            block.addPort(random.choice(names), random.random()>0.5, random.random()>0.5)
-        block.setPos(self.view.sceneRect().center().toPoint())
-
-
     def zoomIn(self):
         if self.scale < 4:
             self.scale *= 1.2
@@ -158,6 +104,70 @@ class QNEMainWindow(QMainWindow):
         self.view.setTransform(QTransform())
 
 
+    #########################################
+    # ZOCP implementation
+    #########################################
+    def initZOCP(self):
+        import socket
+
+        self.zocp = ZOCP()
+        self.zocp.set_name("ZOCP Node Editor@%s" % socket.gethostname())
+        self.notifier = QSocketNotifier(
+            self.zocp.inbox.getsockopt(zmq.FD),
+            QSocketNotifier.Read)
+        self.notifier.setEnabled(True)
+        self.notifier.activated.connect(self.onZOCPEvent)
+        self.zocp.on_peer_enter = self.onPeerEnter
+        self.zocp.on_peer_exit = self.onPeerExit
+        self.zocp.on_peer_modified = self.onPeerModified
+        self.zocp.on_peer_signaled = self.onPeerSignaled
+
+
+    def onZOCPEvent(self):
+        self.zocp.run_once(0)
+
+
+    def onPeerEnter(self, peer, name, *args, **kwargs):
+        # Subscribe to any and all value changes
+        self.zocp.peer_subscribe(peer)
+
+        # Add named block; ports are not known at this point
+        node = {}
+        node["block"] = QNEBlock(None)
+        self.scene.addItem(node["block"])
+        node["block"].addPort(name, False, False, QNEPort.NamePort)
+        node["ports"] = dict()
+
+        self.nodes[peer.hex] = node
+
+
+    def onPeerExit(self, peer, name, *args, **kwargs):
+        # Unsibscribe from value changes
+        self.zocp.peer_unsubscribe(peer)
+
+        # Remove block
+        if peer.hex in self.nodes:
+            self.nodes[peer.hex]["block"].delete()
+            self.nodes.pop(peer.hex)
+
+
+    def onPeerModified(self, peer, data, *args, **kwargs):
+        for portname in data:
+            if portname not in self.nodes[peer.hex]["ports"]:
+                hasInput = "s" in data[portname]["access"]
+                hasOutput = "e" in data[portname]["access"]
+                port = {}
+                port["port"] = self.nodes[peer.hex]["block"].addPort(portname, hasInput, hasOutput)
+                port["caps"] = data[portname]
+                self.nodes[peer.hex]["ports"][portname] = port
+            else:
+                pass
+
+
+    def onPeerSignaled(self, peer, data, *args, **kwargs):
+        pass
+
+
 
 if __name__ == '__main__':
     import sys
@@ -168,4 +178,3 @@ if __name__ == '__main__':
     widget.show()
 
     sys.exit(app.exec_())
-
