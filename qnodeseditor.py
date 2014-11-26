@@ -66,7 +66,7 @@ class QNodesEditor(QObject):
     def deleteSelected(self):
         for item in self.scene.items():
             if (item.isSelected() and
-               (item.type() == QNEBlock.Type or item.type() == QNEConnection.Type)):
+                item.type() == QNEConnection.Type):
                 item.delete()
 
 
