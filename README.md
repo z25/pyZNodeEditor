@@ -1,22 +1,14 @@
+pyZNodeEditor
+=============
+A monitor/editor for ZOCP nodes, implemented in PySide (Python/Qt4). 
+ZOCP is the Z25 Orchestration Control Protocol, currently in 
+development at z25.org
+
 pyQNodesEditor
-==============
+--------------
 
-Python port of ALGOholic's QNodesEditor  
-See ALGOholic for more information:
-http://algoholic.eu/qnodeseditor-qt-nodesports-based-data-processing-flow-editor/
-
-This port uses to Python3 PySide  
-Note: Saving/Loading is currently not implemented
-
-The fov_dev branch has the following changes from the original:
-
-* Ports can have input, output, both, or no connections
-* Implements "rubberband" (multiple) selection
-* Select All/Select Inverse
-* Press "Del" to delete selected items, instead of right mouse button
-* Implements zooming in/out of node graph
-* Selected blocks jump to the front
-* Ports are moved halfway into the block
-* Blocks are slightly transparant to show underlying connections
-  when blocks overlap
-* Uses system colors
+pyZNodeEditor is based on a Python port of ALGOholic's QNodesEditor  
+See ALGOholic for more information:  
+http://algoholic.eu/qnodeseditor-qt-nodesports-based-data-processing-flow-editor/  
+The original port can be found here:  
+https://github.com/fieldOfView/pyQNodesEditor  
