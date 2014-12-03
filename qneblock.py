@@ -39,6 +39,8 @@ class QNEBlock(QGraphicsPathItem):
     def __init__(self, parent):
         super(QNEBlock, self).__init__(parent)
 
+        self.m_name = ""
+
         self.normalBrush = QApplication.palette().dark()
         normalColor = self.normalBrush.color()
         normalColor.setAlphaF(0.8)
@@ -50,7 +52,7 @@ class QNEBlock(QGraphicsPathItem):
         self.selectedBrush.setColor(selectedColor)
 
         path = QPainterPath()
-        path.addRoundedRect(-50, -15, 100, 30, 5, 5);
+        path.addRoundedRect(-50, -15, 100, 30, 5, 5)
         self.setPath(path)
         self.setPen(QPen(Qt.black))
         self.setBrush(self.normalBrush)
@@ -106,7 +108,7 @@ class QNEBlock(QGraphicsPathItem):
         port.setPortFlags(flags)
         port.setPtr(ptr)
 
-        fontmetrics = QFontMetrics(self.scene().font());
+        fontmetrics = QFontMetrics(self.scene().font())
         width = fontmetrics.width(name)
         height = fontmetrics.height()
         if width > self.width - self.horzMargin:
@@ -124,7 +126,7 @@ class QNEBlock(QGraphicsPathItem):
 
             port_.setPos(-self.width/2 - port.radius(), y)
             port_.setWidth(self.width)
-            y += height;
+            y += height
 
         return port
 
@@ -186,3 +188,11 @@ class QNEBlock(QGraphicsPathItem):
 
     def type(self):
         return self.Type
+
+
+    def setName(self, name):
+        self.m_name = name
+
+
+    def name(self):
+        return self.m_name

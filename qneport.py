@@ -72,7 +72,7 @@ class QNEPort(QGraphicsPathItem):
     def setName(self, name):
         self.name = name
         self.label.setPlainText(name)
-        self.label.setPos(self.radius_ + self.margin, -self.label.boundingRect().height()/2);
+        self.label.setPos(self.radius_ + self.margin, -self.label.boundingRect().height()/2)
 
 
     def setCanConnect(self, hasInput, hasOutput):
@@ -86,7 +86,7 @@ class QNEPort(QGraphicsPathItem):
 
         path = QPainterPath()
         if self.hasInput_:
-            path.addEllipse(0, -self.radius_, 2*self.radius_, 2*self.radius_);
+            path.addEllipse(0, -self.radius_, 2*self.radius_, 2*self.radius_)
         else:
             pass
         self.setPath(path)
@@ -156,7 +156,7 @@ class QNEPort(QGraphicsPathItem):
 
 
     def ptr(self):
-        return self.m_ptr;
+        return self.m_ptr
 
 
     def addConnection(self, connection):
@@ -203,7 +203,7 @@ class QNEOutputPort(QGraphicsPathItem):
         radius_ = parent.radius_
         
         path = QPainterPath()
-        path.addEllipse(0, -radius_, 2*radius_, 2*radius_);
+        path.addEllipse(0, -radius_, 2*radius_, 2*radius_)
         self.setPath(path)
 
 
@@ -245,3 +245,7 @@ class QNEOutputPort(QGraphicsPathItem):
 
     def radius(self):
         return self.parent.radius()
+
+
+    def portName(self):
+        return self.parent.portName()

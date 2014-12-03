@@ -30,6 +30,9 @@ class QNEMainWindow(QMainWindow):
         self.nodesEditor = QNodesEditor(self)
         self.nodesEditor.install(self.scene)
 
+        self.nodesEditor.onAddConnection = self.onAddConnection
+        self.nodesEditor.onRemoveConnection = self.onRemoveConnection
+
         self.scale = 1
         self.installActions()
 
@@ -105,6 +108,20 @@ class QNEMainWindow(QMainWindow):
 
 
     #########################################
+    # Node editor callbacks
+    #########################################
+    def onAddConnection(self, connection, fromPort, toPort):
+        # TODO: send SUB message
+        print ("Added subscription from %s on %s to %s on %s" %
+               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
+
+    def onRemoveConnection(self, connection, fromPort, toPort):
+        # TODO: send UNSUB message
+        print ("Removed subscription from %s on %s to %s on %s" %
+               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
+
+
+    #########################################
     # ZOCP implementation
     #########################################
     def initZOCP(self):
@@ -135,6 +152,7 @@ class QNEMainWindow(QMainWindow):
         node = {}
         node["block"] = QNEBlock(None)
         self.scene.addItem(node["block"])
+        node["block"].setName(name)
         node["block"].addPort(name, False, False, QNEPort.NamePort)
         node["ports"] = dict()
 

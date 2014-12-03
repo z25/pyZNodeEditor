@@ -65,8 +65,13 @@ class QNodesEditor(QObject):
 
     def deleteSelected(self):
         for item in self.scene.items():
-            if (item.isSelected() and
-                item.type() == QNEConnection.Type):
+            if (item.isSelected() and item.type() == QNEConnection.Type):
+                port1 = item.port1()
+                port2 = item.port2()
+                if port1.isOutput():
+                    self.onRemoveConnection(item, port1, port2)
+                else:
+                    self.onRemoveConnection(item, port2, port1)
                 item.delete()
 
 
@@ -77,7 +82,7 @@ class QNodesEditor(QObject):
             if item.type() > QGraphicsItem.UserType:
                 return item
 
-        return None;
+        return None
 
 
     def eventFilter(self, object, event):
@@ -120,8 +125,12 @@ class QNodesEditor(QObject):
                         self.connection.setPos2(port2.scenePos())
                         self.connection.setPort2(port2)
                         self.connection.updatePath()
-                        self.connection = None
+                        if port1.isOutput:
+                            self.onAddConnection(self.connection, port1, port2)
+                        else:
+                            self.onAddConnection(self.connection, port2, port1)
 
+                        self.connection = None
                         return True
 
                 self.connection.delete()
@@ -129,4 +138,13 @@ class QNodesEditor(QObject):
                 return True
 
         return super(QNodesEditor, self).eventFilter(object, event)
+
+    def onAddConnection(self, connection, fromPort, toPort):
+        print ("Added connection from %s on %s to %s on %s" %
+               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
+        
+
+    def onRemoveConnection(self, connection, fromPort, toPort):
+        print ("Removed connection from %s on %s to %s on %s" % 
+               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
 
