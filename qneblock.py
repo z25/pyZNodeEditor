@@ -40,6 +40,7 @@ class QNEBlock(QGraphicsPathItem):
         super(QNEBlock, self).__init__(parent)
 
         self.m_name = ""
+        self.m_uuid = ""
 
         self.normalBrush = QApplication.palette().dark()
         normalColor = self.normalBrush.color()
@@ -196,3 +197,11 @@ class QNEBlock(QGraphicsPathItem):
 
     def name(self):
         return self.m_name
+
+
+    def setUuid(self, uuid):
+        self.m_uuid = uuid
+
+
+    def uuid(self):
+        return self.m_uuid

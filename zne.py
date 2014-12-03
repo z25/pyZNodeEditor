@@ -8,6 +8,8 @@ from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
 from zocp import ZOCP
 import zmq
 
+import logging
+
 from qnodeseditor import QNodesEditor
 from qneblock import QNEBlock
 from qneport import QNEPort
@@ -15,6 +17,9 @@ from qneport import QNEPort
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
         super(QNEMainWindow, self).__init__(parent)
+
+        self.logger = logging.getLogger("zne")
+        self.logger.setLevel(logging.INFO)
 
         self.setMinimumSize(640,480)
         self.setWindowTitle("ZOCP Node Editor")
@@ -111,14 +116,28 @@ class QNEMainWindow(QMainWindow):
     # Node editor callbacks
     #########################################
     def onAddConnection(self, connection, fromPort, toPort):
-        # TODO: send SUB message
-        print ("Added subscription from %s on %s to %s on %s" %
-               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
+        fromBlock = fromPort.block()
+        toBlock = toPort.block()
+
+        emitter = ("%s@%s" % (fromPort.portName(), fromBlock.uuid().hex))
+        receiver = ("%s@%s" % (toPort.portName(), toBlock.uuid().hex))
+
+        self.zocp.peer_subscribe(toBlock.uuid(), emitter, receiver)
+
+        self.logger.debug("added subscription from %s on %s to %s on %s" %
+               (fromPort.portName(), fromBlock.name(), toPort.portName(), toBlock.name()))
 
     def onRemoveConnection(self, connection, fromPort, toPort):
-        # TODO: send UNSUB message
-        print ("Removed subscription from %s on %s to %s on %s" %
-               (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
+        fromBlock = fromPort.block()
+        toBlock = toPort.block()
+
+        emitter = ("%s@%s" % (fromPort.portName(), fromBlock.uuid().hex))
+        receiver = ("%s@%s" % (toPort.portName(), toBlock.uuid().hex))
+
+        self.zocp.peer_unsubscribe(toBlock.uuid(), emitter, receiver)
+
+        self.logger.debug("removed subscription from %s on %s to %s on %s" %
+               (fromPort.portName(), fromBlock.name(), toPort.portName(), toBlock.name()))
 
 
     #########################################
@@ -139,6 +158,9 @@ class QNEMainWindow(QMainWindow):
         self.zocp.on_peer_modified = self.onPeerModified
         self.zocp.on_peer_signaled = self.onPeerSignaled
 
+        zl = logging.getLogger("zocp")
+        zl.setLevel(logging.INFO)
+
 
     def onZOCPEvent(self):
         self.zocp.run_once(0)
@@ -153,6 +175,7 @@ class QNEMainWindow(QMainWindow):
         node["block"] = QNEBlock(None)
         self.scene.addItem(node["block"])
         node["block"].setName(name)
+        node["block"].setUuid(peer)
         node["block"].addPort(name, False, False, QNEPort.NamePort)
         node["ports"] = dict()
 
