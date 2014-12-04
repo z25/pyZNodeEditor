@@ -3,7 +3,7 @@
 from PySide.QtCore import (Qt, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette)
 from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
-    QGraphicsScene, QGraphicsView)
+    QGraphicsItem, QGraphicsScene, QGraphicsView)
 
 from zocp import ZOCP
 import zmq
@@ -127,6 +127,7 @@ class QNEMainWindow(QMainWindow):
         self.logger.debug("added subscription from %s on %s to %s on %s" %
                (fromPort.portName(), fromBlock.name(), toPort.portName(), toBlock.name()))
 
+
     def onRemoveConnection(self, connection, fromPort, toPort):
         fromBlock = fromPort.block()
         toBlock = toPort.block()
@@ -138,6 +139,11 @@ class QNEMainWindow(QMainWindow):
 
         self.logger.debug("removed subscription from %s on %s to %s on %s" %
                (fromPort.portName(), fromBlock.name(), toPort.portName(), toBlock.name()))
+
+
+    def onBlockMove(self, block, position):
+        peer = block.uuid()
+        self.zocp.peer_set(peer, {"_zne_position": position})
 
 
     #########################################
@@ -157,6 +163,7 @@ class QNEMainWindow(QMainWindow):
         self.zocp.on_peer_exit = self.onPeerExit
         self.zocp.on_peer_modified = self.onPeerModified
         self.zocp.on_peer_signaled = self.onPeerSignaled
+        self.zocp.start()
 
         zl = logging.getLogger("zocp")
         zl.setLevel(logging.INFO)
@@ -177,6 +184,7 @@ class QNEMainWindow(QMainWindow):
         node["block"].setName(name)
         node["block"].setUuid(peer)
         node["block"].addPort(name, False, False, QNEPort.NamePort)
+        node["block"].onBlockMove = self.onBlockMove
         node["ports"] = dict()
 
         self.nodes[peer.hex] = node
@@ -194,6 +202,16 @@ class QNEMainWindow(QMainWindow):
 
     def onPeerModified(self, peer, data, *args, **kwargs):
         for portname in data:
+            if "access" not in data[portname]:
+                # Metadata, not a capability
+                if portname == "_zne_position":
+                    pos = data[portname]
+                    block = self.nodes[peer.hex]["block"]
+                    block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
+                    block.setPos(pos[0], pos[1])
+                    block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
+                continue
+
             if portname not in self.nodes[peer.hex]["ports"]:
                 hasInput = "s" in data[portname]["access"]
                 hasOutput = "e" in data[portname]["access"]
@@ -202,6 +220,7 @@ class QNEMainWindow(QMainWindow):
                 port["caps"] = data[portname]
                 self.nodes[peer.hex]["ports"][portname] = port
             else:
+                #TODO: modify existing port
                 pass
 
 

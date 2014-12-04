@@ -59,6 +59,7 @@ class QNEBlock(QGraphicsPathItem):
         self.setBrush(self.normalBrush)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
 
         self.effect = QGraphicsDropShadowEffect(None)
         self.effect.setBlurRadius(8)
@@ -98,7 +99,14 @@ class QNEBlock(QGraphicsPathItem):
         if change == QGraphicsItem.ItemSelectedHasChanged:
             self.setZValue( 1 if value else 0 )
 
+        elif change == QGraphicsItem.ItemScenePositionHasChanged:
+            self.onBlockMove(self, [value.x(), value.y()])
+
         return value
+
+
+    def onBlockMove(self, block, position):
+        pass
 
 
     def addPort(self, name, hasInput = False, hasOutput = False, flags = 0, ptr = None):
