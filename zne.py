@@ -218,9 +218,8 @@ class QNEMainWindow(QMainWindow):
                     # Metadata, not a capability
                     if portname == "_zne_position":
                         block = self.nodes[peer.hex]["block"]
-                        block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
                         block.setPos(portdata[0], portdata[1])
-                        block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
+
             else:
                 #TODO: modify existing port
                 port = self.nodes[peer.hex]["ports"][portname]
