@@ -87,6 +87,8 @@ class QNodesEditor(QObject):
 
     def eventFilter(self, object, event):
         if event.type() == QEvent.GraphicsSceneMousePress:
+            self.mousePressOnBlock = False
+            self.mouseDragged = False
 
             if event.button() == Qt.LeftButton:
                 item = self.itemAt(event.scenePos())
@@ -103,13 +105,19 @@ class QNodesEditor(QObject):
                     self.selectNone()
                     return True
 
+                elif item and item.type() == QNEBlock.Type:
+                    self.mousePressOnBlock = True
+                    return False
+
         elif event.type() == QEvent.GraphicsSceneMouseMove:
             if self.connection:
                 self.connection.setPos2(event.scenePos())
                 self.connection.updatePath()
-
                 return True
 
+            else:
+                self.mouseDragged = True
+                return False
 
         elif event.type() == QEvent.GraphicsSceneMouseRelease:
             if self.connection and event.button() == Qt.LeftButton:
@@ -137,6 +145,13 @@ class QNodesEditor(QObject):
                 self.connection = None
                 return True
 
+            elif event.button() == Qt.LeftButton:
+                if self.mousePressOnBlock and self.mouseDragged:
+                    for item in self.scene.selectedItems():
+                        if item.type() == QNEBlock.Type:
+                            self.onBlockMoved(item)
+
+
         return super(QNodesEditor, self).eventFilter(object, event)
 
     def onAddConnection(self, connection, fromPort, toPort):
@@ -148,3 +163,6 @@ class QNodesEditor(QObject):
         print ("Removed connection from %s on %s to %s on %s" % 
                (fromPort.portName(), fromPort.block().name(), toPort.portName(), toPort.block().name()))
 
+
+    def onBlockMoved(self, block):
+        print ("Block %s moved" % block.name())

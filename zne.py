@@ -13,6 +13,7 @@ import logging
 from qnodeseditor import QNodesEditor
 from qneblock import QNEBlock
 from qneport import QNEPort
+from qneconnection import QNEConnection
 
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
@@ -37,6 +38,7 @@ class QNEMainWindow(QMainWindow):
 
         self.nodesEditor.onAddConnection = self.onAddConnection
         self.nodesEditor.onRemoveConnection = self.onRemoveConnection
+        self.nodesEditor.onBlockMoved = self.onBlockMoved
 
         self.scale = 1
         self.installActions()
@@ -44,6 +46,7 @@ class QNEMainWindow(QMainWindow):
         self.initZOCP()
 
         self.nodes = {}
+        self.pendingSubscribers = {}
 
 
     def closeEvent(self, *args):
@@ -141,9 +144,10 @@ class QNEMainWindow(QMainWindow):
                (fromPort.portName(), fromBlock.name(), toPort.portName(), toBlock.name()))
 
 
-    def onBlockMove(self, block, position):
+    def onBlockMoved(self, block):
+        pos = block.pos()
         peer = block.uuid()
-        self.zocp.peer_set(peer, {"_zne_position": position})
+        self.zocp.peer_set(peer, {"_zne_position": [pos.x(), pos.y()]})
 
 
     #########################################
@@ -184,7 +188,6 @@ class QNEMainWindow(QMainWindow):
         node["block"].setName(name)
         node["block"].setUuid(peer)
         node["block"].addPort(name, False, False, QNEPort.NamePort)
-        node["block"].onBlockMove = self.onBlockMove
         node["ports"] = dict()
 
         self.nodes[peer.hex] = node
@@ -202,31 +205,83 @@ class QNEMainWindow(QMainWindow):
 
     def onPeerModified(self, peer, data, *args, **kwargs):
         for portname in data:
-            if "access" not in data[portname]:
-                # Metadata, not a capability
-                if portname == "_zne_position":
-                    pos = data[portname]
-                    block = self.nodes[peer.hex]["block"]
-                    block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
-                    block.setPos(pos[0], pos[1])
-                    block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
-                continue
+            portdata = data[portname]
 
             if portname not in self.nodes[peer.hex]["ports"]:
-                hasInput = "s" in data[portname]["access"]
-                hasOutput = "e" in data[portname]["access"]
-                port = {}
-                port["port"] = self.nodes[peer.hex]["block"].addPort(portname, hasInput, hasOutput)
-                port["caps"] = data[portname]
-                self.nodes[peer.hex]["ports"][portname] = port
+                if "access" in portdata:
+                    hasInput = "s" in portdata["access"]
+                    hasOutput = "e" in portdata["access"]
+                    port = self.nodes[peer.hex]["block"].addPort(portname, hasInput, hasOutput)
+                    self.nodes[peer.hex]["ports"][portname] = port
+
+                else:
+                    # Metadata, not a capability
+                    if portname == "_zne_position":
+                        block = self.nodes[peer.hex]["block"]
+                        block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
+                        block.setPos(portdata[0], portdata[1])
+                        block.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, True)
             else:
                 #TODO: modify existing port
-                pass
+                port = self.nodes[peer.hex]["ports"][portname]
+
+            if "subscribers" in portdata:
+                self.updateSubscribers(port, portdata["subscribers"])
+
+        self.updatePendingSubscribers(peer)
 
 
     def onPeerSignaled(self, peer, data, *args, **kwargs):
         pass
 
+
+    def updateSubscribers(self, port, subscribers):
+        connections = port.connections()
+        # TODO: remove connections that are not in the new subscribers list
+
+        port1 = port.outputPort
+
+        for subscriber in subscribers:
+            [uuid, portname] = subscriber
+            if uuid in self.nodes:
+                node = self.nodes[uuid]
+                if portname in node["ports"]:
+                    port2 = node["ports"][portname]
+                    if not port2.isConnected(port1):
+                        # create new connection
+                        connection = QNEConnection(None)
+                        connection.setPort1(port1)
+                        connection.setPort2(port2)
+                        connection.updatePosFromPorts()
+                        connection.updatePath()
+                        self.scene.addItem(connection)
+                    continue
+
+            # if the connection could not be made yet, add it to a list of
+            # pending subscriber-connections
+            if uuid not in self.pendingSubscribers:
+                self.pendingSubscribers[uuid] = []
+            self.pendingSubscribers[uuid].append([port1, portname])
+
+
+    def updatePendingSubscribers(self, peer):
+        if peer.hex in self.pendingSubscribers:
+            for subscriber in self.pendingSubscribers[peer.hex]:
+                [port1, portname] = subscriber
+                if peer.hex in self.nodes and portname in self.nodes[peer.hex]["ports"]:
+                    port2 = self.nodes[peer.hex]["ports"][portname]
+
+                    connection = QNEConnection(None)
+                    connection.setPort1(port1)
+                    connection.setPort2(port2)
+                    connection.updatePosFromPorts()
+                    connection.updatePath()
+                    self.scene.addItem(connection)
+                else:
+                    # TODO: handle case where port is still not available
+                    pass
+
+            self.pendingSubscribers.pop(peer.hex)
 
 
 if __name__ == '__main__':
