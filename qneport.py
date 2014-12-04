@@ -115,10 +115,6 @@ class QNEPort(QGraphicsPathItem):
             self.setPath(QPainterPath())
 
 
-    def setPtr(self, ptr):
-        self.m_ptr = ptr
-
-
     def type(self):
         return self.Type
 
@@ -153,11 +149,7 @@ class QNEPort(QGraphicsPathItem):
 
     def portFlags(self):
         return self.m_portFlags
-
-
-    def ptr(self):
-        return self.m_ptr
-
+	
 
     def addConnection(self, connection):
         self.m_connections.append(connection)

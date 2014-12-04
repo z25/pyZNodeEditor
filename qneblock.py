@@ -101,13 +101,12 @@ class QNEBlock(QGraphicsPathItem):
         return value
 
 
-    def addPort(self, name, hasInput = False, hasOutput = False, flags = 0, ptr = None):
+    def addPort(self, name, hasInput = False, hasOutput = False, flags = 0):
         port = QNEPort(self)
         port.setName(name)
         port.setCanConnect(hasInput, hasOutput)
         port.setNEBlock(self)
         port.setPortFlags(flags)
-        port.setPtr(ptr)
 
         fontmetrics = QFontMetrics(self.scene().font())
         width = fontmetrics.width(name)
@@ -173,7 +172,7 @@ class QNEBlock(QGraphicsPathItem):
         self.scene().addItem(block)
 
         for port_ in self.childItems():
-            block.addPort(port_.portName(), port_.hasInput(), port_.hasOutput(), port_.portFlags(), port_.ptr())
+            block.addPort(port_.portName(), port_.hasInput(), port_.hasOutput(), port_.portFlags())
 
         return block
 
