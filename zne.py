@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from PySide.QtCore import (Qt, QSocketNotifier)
-from PySide.QtGui import (QPainter, QBrush, QPalette)
+from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon)
 from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
     QGraphicsItem, QGraphicsScene, QGraphicsView)
 
@@ -24,6 +24,7 @@ class QNEMainWindow(QMainWindow):
 
         self.setMinimumSize(640,480)
         self.setWindowTitle("ZOCP Node Editor")
+        self.setWindowIcon(QIcon('assets/icon.png'))
 
         self.scene = QGraphicsScene(self)
         self.scene.setBackgroundBrush( QApplication.palette().window() )
