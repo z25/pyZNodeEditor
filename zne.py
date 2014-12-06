@@ -189,6 +189,7 @@ class QNEMainWindow(QMainWindow):
         node["block"].setName(name)
         node["block"].setUuid(peer)
         node["block"].addPort(name, False, False, QNEPort.NamePort)
+        node["block"].setVisible(False)
         node["ports"] = dict()
 
         self.nodes[peer.hex] = node
@@ -228,6 +229,8 @@ class QNEMainWindow(QMainWindow):
             if "subscribers" in portdata:
                 self.updateSubscribers(port, portdata["subscribers"])
 
+        if len(self.nodes[peer.hex]["ports"]) > 0:
+            self.nodes[peer.hex]["block"].setVisible(True)
         self.updatePendingSubscribers(peer)
 
 
