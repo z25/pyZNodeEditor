@@ -2,8 +2,8 @@
 
 from PySide.QtCore import (Qt, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon, QTransform)
-from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
-    QGraphicsItem, QGraphicsScene, QGraphicsView)
+from PySide.QtGui import (QApplication, QMainWindow, QMessageBox, QAction,
+    QWidget, QGraphicsItem, QGraphicsScene, QGraphicsView)
 
 from zocp import ZOCP
 import zmq
@@ -98,6 +98,14 @@ class QNEMainWindow(QMainWindow):
         self.view.addAction(zoomOutAct)
         self.view.addAction(zoomResetAct)
 
+        aboutAct = QAction("&About", self,
+             triggered=self.about)
+
+        helpMenu = self.menuBar().addMenu("&Help")
+        helpMenu.addAction(aboutAct)
+
+        self.view.addAction(aboutAct)
+
 
     def zoomIn(self):
         if self.scale < 4:
@@ -114,6 +122,14 @@ class QNEMainWindow(QMainWindow):
     def zoomReset(self):
         self.scale = 1
         self.view.setTransform(QTransform())
+
+
+    def about(self):
+        QMessageBox.about(self, "About ZOCP Node Editor",
+            "<p>A monitor/editor for ZOCP nodes, implemented in PySide"
+             "(Python/Qt4).</p><p>ZOCP is the Z25 Orchestration Control "
+             "Protocol, currently in development at "
+             "<a href='http://z25.org'>z25.org</a></p>")
 
 
     #########################################
