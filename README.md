@@ -6,7 +6,6 @@ development at z25.org
 
 pyQNodesEditor
 --------------
-
 pyZNodeEditor is based on a Python port of ALGOholic's QNodesEditor  
 See ALGOholic for more information:  
 http://algoholic.eu/qnodeseditor-qt-nodesports-based-data-processing-flow-editor/  
