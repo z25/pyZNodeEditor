@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from PySide.QtCore import (Qt, QSocketNotifier)
-from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon)
+from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon, QTransform)
 from PySide.QtGui import (QApplication, QMainWindow, QAction, QWidget,
     QGraphicsItem, QGraphicsScene, QGraphicsView)
 
