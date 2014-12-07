@@ -239,11 +239,20 @@ class QNEMainWindow(QMainWindow):
 
 
     def updateSubscribers(self, port, subscribers):
-        connections = port.connections()
-        # TODO: remove connections that are not in the new subscribers list
-
         port1 = port.outputPort
 
+        # check if any current connections should be removed
+        connections = port.connections()
+        for connection in connections:
+            if(connection.port1().isOutput()):
+                port2 = connection.port2()
+            else:
+                port2 = connection.port1()
+            subscriber = [port2.block().uuid().hex, port2.portName()]
+            if subscriber not in subscribers:
+                connection.delete()
+
+        # add new connections for new subscriptions
         for subscriber in subscribers:
             [uuid, portname] = subscriber
             if uuid in self.nodes:
