@@ -26,7 +26,8 @@
 
 
 from PySide.QtCore import (Qt, QObject, QEvent, QSizeF, QRectF, QPointF)
-from PySide.QtGui import (QGraphicsView, QGraphicsItem, QGraphicsItem, 
+from PySide.QtGui import (QPainter)
+from PySide.QtGui import (QApplication, QGraphicsView, QGraphicsItem,
     QGraphicsSceneMouseEvent)
 
 from qneblock import QNEBlock
@@ -34,22 +35,25 @@ from qneport import QNEPort
 from qneconnection import QNEConnection
 
 class QNodesEditor(QObject):
-    def __init__(self, parent):
+    def __init__(self, parent, scene, view):
         super(QNodesEditor, self).__init__(parent)
 
-        self.connection = None
-        self.view = parent.view
-        self.view.setDragMode(QGraphicsView.RubberBandDrag)
-
-    def install(self, scene):
         self.scene = scene
+        self.scene.setBackgroundBrush( QApplication.palette().window() )
         self.scene.installEventFilter(self)
+
+        self.view = view
+        self.view.setDragMode(QGraphicsView.RubberBandDrag)
+        self.view.setRenderHint(QPainter.Antialiasing)
+
+        self.connection = None
 
 
     def selectNone(self):
         for item in self.scene.items():
             if item.type() == QNEBlock.Type or item.type() == QNEConnection.Type:
                 item.setSelected(False)
+
 
     def selectAll(self):
         for item in self.scene.items():
@@ -153,6 +157,7 @@ class QNodesEditor(QObject):
 
 
         return super(QNodesEditor, self).eventFilter(object, event)
+
 
     def onAddConnection(self, connection, fromPort, toPort):
         print ("Added connection from %s on %s to %s on %s" %

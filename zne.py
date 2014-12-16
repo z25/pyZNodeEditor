@@ -22,20 +22,16 @@ class QNEMainWindow(QMainWindow):
         self.logger = logging.getLogger("zne")
         self.logger.setLevel(logging.INFO)
 
-        self.setMinimumSize(640,480)
+        self.setMinimumSize(560,360)
         self.setWindowTitle("ZOCP Node Editor")
         self.setWindowIcon(QIcon('assets/icon.png'))
 
         self.scene = QGraphicsScene(self)
-        self.scene.setBackgroundBrush( QApplication.palette().window() )
-
         self.view = QGraphicsView(self)
         self.view.setScene(self.scene)
-        self.view.setRenderHint(QPainter.Antialiasing)
         self.setCentralWidget(self.view)
 
-        self.nodesEditor = QNodesEditor(self)
-        self.nodesEditor.install(self.scene)
+        self.nodesEditor = QNodesEditor(self, self.scene, self.view)
 
         self.nodesEditor.onAddConnection = self.onAddConnection
         self.nodesEditor.onRemoveConnection = self.onRemoveConnection
@@ -230,6 +226,7 @@ class QNEMainWindow(QMainWindow):
                     hasInput = "s" in portdata["access"]
                     hasOutput = "e" in portdata["access"]
                     port = self.nodes[peer.hex]["block"].addPort(portname, hasInput, hasOutput)
+                    port.setValue(str(portdata["value"]))
                     self.nodes[peer.hex]["ports"][portname] = port
 
                 else:
@@ -239,8 +236,9 @@ class QNEMainWindow(QMainWindow):
                         block.setPos(portdata[0], portdata[1])
 
             else:
-                #TODO: modify existing port
                 port = self.nodes[peer.hex]["ports"][portname]
+                if "value" in portdata:
+                    port.setValue(str(portdata["value"]))
 
             if "subscribers" in portdata:
                 self.updateSubscribers(port, portdata["subscribers"])
@@ -251,7 +249,9 @@ class QNEMainWindow(QMainWindow):
 
 
     def onPeerSignaled(self, peer, data, *args, **kwargs):
-        pass
+        [portname, value] = data
+        if portname in self.nodes[peer.hex]["ports"]:
+            self.nodes[peer.hex]["ports"][portname].setValue(str(value))
 
 
     def updateSubscribers(self, port, subscribers):

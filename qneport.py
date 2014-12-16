@@ -25,8 +25,9 @@
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from PySide.QtCore import (Qt)
-from PySide.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPen)
+from PySide.QtCore import (Qt, QSize)
+from PySide.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPen,
+    QFontMetrics)
 from PySide.QtGui import (QApplication, QGraphicsItem, QGraphicsPathItem, 
     QGraphicsTextItem)
 
@@ -40,6 +41,12 @@ class QNEPort(QGraphicsPathItem):
         self.label = QGraphicsTextItem(self)
         self.radius_ = 4
         self.margin = 3
+        self.widgetWidth = 50
+
+        self.valueText = QGraphicsTextItem(self)
+        self.valueText.setTextWidth(self.widgetWidth)
+        #self.valueText.setTextInteractionFlags(Qt.TextEditorInteraction)
+        #self.valueText.setTabChangesFocus(True)
 
         self.setPen(QPen(QApplication.palette().text().color(), 1))
         self.setBrush(QApplication.palette().highlight())
@@ -75,6 +82,14 @@ class QNEPort(QGraphicsPathItem):
         self.label.setPos(self.radius_ + self.margin, -self.label.boundingRect().height()/2)
 
 
+    def setValue(self, value):
+        self.value = value
+        value_ = value
+        if len(value) > 9:
+            value_ = value[:6] + "..."
+        self.valueText.setPlainText(value_)
+
+
     def setCanConnect(self, hasInput, hasOutput):
         self.hasInput_ = hasInput
         self.hasOutput_ = hasOutput
@@ -94,7 +109,9 @@ class QNEPort(QGraphicsPathItem):
 
     def setWidth(self, width):
         self.outputPort.setPos(width, 0)
-        
+        self.valueText.setPos(width - self.widgetWidth - self.radius_ - self.margin,
+                              -self.valueText.boundingRect().height()/2)
+
         
     def setNEBlock(self, block):
         self.m_block = block
@@ -107,12 +124,25 @@ class QNEPort(QGraphicsPathItem):
             font = self.scene().font()
             font.setItalic(True)
             self.label.setFont(font)
+            self.valueText.setVisible(False)
             self.setPath(QPainterPath())
         elif self.m_portFlags & self.NamePort:
             font = self.scene().font()
             font.setBold(True)
             self.label.setFont(font)
+            self.valueText.setVisible(False)
             self.setPath(QPainterPath())
+
+
+    def innerSize(self):
+        fontmetrics = QFontMetrics(self.scene().font())
+        height = fontmetrics.height()
+        width = fontmetrics.width(self.name)
+
+        if self.m_portFlags == 0:
+            width = width + self.widgetWidth
+
+        return QSize(width, height)
 
 
     def type(self):

@@ -26,8 +26,7 @@
 
 
 from PySide.QtCore import (Qt)
-from PySide.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPen,
-    QFontMetrics)
+from PySide.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPen)
 from PySide.QtGui import (QApplication, QGraphicsItem, QGraphicsPathItem, 
     QGraphicsDropShadowEffect)
 
@@ -66,7 +65,7 @@ class QNEBlock(QGraphicsPathItem):
         self.effect.setOffset(2,2)
         self.setGraphicsEffect(self.effect)
 
-        self.horzMargin = 16
+        self.horzMargin = 20
         self.vertMargin = 5
         self.width = self.horzMargin
         self.height = self.vertMargin
@@ -110,9 +109,9 @@ class QNEBlock(QGraphicsPathItem):
         port.setNEBlock(self)
         port.setPortFlags(flags)
 
-        fontmetrics = QFontMetrics(self.scene().font())
-        width = fontmetrics.width(name)
-        height = fontmetrics.height()
+        innerSize = port.innerSize()
+        width = innerSize.width()
+        height = innerSize.height()
         if width > self.width - self.horzMargin:
             self.width = width + self.horzMargin
         self.height += height
@@ -128,7 +127,7 @@ class QNEBlock(QGraphicsPathItem):
 
             port_.setPos(-self.width/2 - port.radius(), y)
             port_.setWidth(self.width)
-            y += height
+            y += port_.innerSize().height()
 
         return port
 
