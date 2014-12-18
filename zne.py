@@ -217,7 +217,7 @@ class QNEMainWindow(QMainWindow):
             self.nodes.pop(peer.hex)
 
 
-    def onPeerModified(self, peer, data, *args, **kwargs):
+    def onPeerModified(self, peer, name, data, *args, **kwargs):
         for portname in data:
             portdata = data[portname]
 
@@ -248,7 +248,7 @@ class QNEMainWindow(QMainWindow):
         self.updatePendingSubscribers(peer)
 
 
-    def onPeerSignaled(self, peer, data, *args, **kwargs):
+    def onPeerSignaled(self, peer, name, data, *args, **kwargs):
         [portname, value] = data
         if portname in self.nodes[peer.hex]["ports"]:
             self.nodes[peer.hex]["ports"][portname].setValue(str(value))
