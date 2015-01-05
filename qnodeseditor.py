@@ -137,7 +137,7 @@ class QNodesEditor(QObject):
                         self.connection.setPos2(port2.scenePos())
                         self.connection.setPort2(port2)
                         self.connection.updatePath()
-                        if port1.isOutput:
+                        if port1.isOutput():
                             self.onAddConnection(self.connection, port1, port2)
                         else:
                             self.onAddConnection(self.connection, port2, port1)

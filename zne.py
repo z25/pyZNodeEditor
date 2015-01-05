@@ -135,10 +135,10 @@ class QNEMainWindow(QMainWindow):
         fromBlock = fromPort.block()
         toBlock = toPort.block()
 
-        emitter = fromPort.portName()
-        emit_peer = fromBlock.uuid()
-        receiver = toPort.portName()
-        recv_peer = toBlock.uuid()
+        emitter = toPort.portName()
+        emit_peer = toBlock.uuid()
+        receiver = fromPort.portName()
+        recv_peer = fromBlock.uuid()
 
         self.zocp.signal_subscribe(recv_peer, receiver, emit_peer, emitter)
 
@@ -150,10 +150,10 @@ class QNEMainWindow(QMainWindow):
         fromBlock = fromPort.block()
         toBlock = toPort.block()
 
-        emitter = fromPort.portName()
-        emit_peer = fromBlock.uuid()
-        receiver = toPort.portName()
-        recv_peer = toBlock.uuid()
+        emitter = toPort.portName()
+        emit_peer = toBlock.uuid()
+        receiver = fromPort.portName()
+        recv_peer = fromBlock.uuid()
 
         self.zocp.signal_unsubscribe(recv_peer, receiver, emit_peer, emitter)
 
@@ -213,7 +213,7 @@ class QNEMainWindow(QMainWindow):
 
     def onPeerExit(self, peer, name, *args, **kwargs):
         # Unsibscribe from value changes
-        self.signal_unsubscribe(self.zocp.get_uuid(), None, peer, None)
+        self.zocp.signal_unsubscribe(self.zocp.get_uuid(), None, peer, None)
 
         # Remove block
         if peer.hex in self.nodes:
