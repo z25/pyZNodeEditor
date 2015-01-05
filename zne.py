@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from PySide.QtCore import (Qt, QSocketNotifier)
+from PySide.QtCore import (Qt, QTimer, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon, QTransform)
 from PySide.QtGui import (QApplication, QMainWindow, QMessageBox, QAction,
     QWidget, QGraphicsItem, QGraphicsScene, QGraphicsView)
@@ -44,6 +44,8 @@ class QNEMainWindow(QMainWindow):
 
         self.nodes = {}
         self.pendingSubscribers = {}
+
+        QTimer.singleShot(250, lambda: self.scene.invalidate())
 
 
     def closeEvent(self, *args):
