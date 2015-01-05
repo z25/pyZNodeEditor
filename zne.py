@@ -2,13 +2,14 @@
 
 from PySide.QtCore import (Qt, QTimer, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon, QTransform)
-from PySide.QtGui import (QApplication, QMainWindow, QMessageBox, QAction,
-    QGraphicsScene, QGraphicsView)
+from PySide.QtGui import (QApplication, QMainWindow, QMessageBox, QFileDialog,
+    QAction, QGraphicsScene, QGraphicsView)
 
 from zocp import ZOCP
 import zmq
 
 import logging
+import socket
 
 from qnodeseditor import QNodesEditor
 from qneblock import QNEBlock
@@ -57,11 +58,16 @@ class QNEMainWindow(QMainWindow):
     def installActions(self):
         quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
             statusTip="Exit the application", triggered=self.close)
+        saveAct = QAction("&Save", self, shortcut="Ctrl+S",
+            statusTip="Write a description of the network to disc", triggered=self.writeNetwork)
 
         fileMenu = self.menuBar().addMenu("&File")
+        fileMenu.addAction(saveAct)
+        fileMenu.addSeparator()
         fileMenu.addAction(quitAct)
 
         # for shortcuts
+        self.view.addAction(saveAct)
         self.view.addAction(quitAct)
 
         selectAllAct = QAction("Select &All", self, shortcut="Ctrl+A",
@@ -109,6 +115,22 @@ class QNEMainWindow(QMainWindow):
         helpMenu.addAction(aboutAct)
 
         self.view.addAction(aboutAct)
+
+
+    def writeNetwork(self):
+        fileName, filtr = QFileDialog.getSaveFileName(self)
+        if fileName:
+            # setup ZOCP node, and run it for some time to discover
+            # the current network
+            configManager = ZConfigManagerNode("ConfigManager@%s" % socket.gethostname())
+            configManager.discover(0.5)
+            tree = configManager.build_network_tree()
+
+            # write network description to file
+            configManager.write(fileName, tree)
+
+            # shut down ZOCP node
+            configManager.stop()
 
 
     def zoomIn(self):
@@ -179,8 +201,6 @@ class QNEMainWindow(QMainWindow):
     # ZOCP implementation
     #########################################
     def initZOCP(self):
-        import socket
-
         self.zocp = ZOCP()
         self.zocp.set_name("ZOCP Node Editor@%s" % socket.gethostname())
         self.notifier = QSocketNotifier(
