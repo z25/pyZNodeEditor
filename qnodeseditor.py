@@ -26,9 +26,9 @@
 
 
 from PySide.QtCore import (Qt, QObject, QEvent, QSizeF, QRectF, QPointF)
-from PySide.QtGui import (QBrush, QPainter, QPixmap)
+from PySide.QtGui import (QBrush, QPen, QPainter, QPainterPath, QPixmap)
 from PySide.QtGui import (QApplication, QGraphicsView, QGraphicsItem,
-    QGraphicsSceneMouseEvent)
+    QGraphicsPathItem, QGraphicsSceneMouseEvent)
 
 from qneblock import QNEBlock
 from qneport import QNEPort
@@ -45,9 +45,20 @@ class QNodesEditor(QObject):
         gridMap = QPixmap(gridSize,gridSize)
         gridPainter = QPainter(gridMap)
         gridPainter.fillRect(0,0,gridSize,gridSize, QApplication.palette().window().color().darker(103))
-        gridPainter.fillRect(0,0,gridSize-3,gridSize-3, QApplication.palette().window())
+        gridPainter.fillRect(1,1,gridSize-2,gridSize-2, QApplication.palette().window())
         gridPainter.end()
         self.scene.setBackgroundBrush( QBrush(gridMap) )
+
+        originSize = 50
+        originItem = QGraphicsPathItem()
+        path = QPainterPath()
+        path.moveTo(0,-originSize)
+        path.lineTo(0,originSize)
+        path.moveTo(-originSize,0)
+        path.lineTo(originSize,0)
+        originItem.setPath(path)
+        originItem.setPen(QPen(QApplication.palette().window().color().darker(110),2))
+        self.scene.addItem(originItem)
 
         self.view = view
         self.view.setDragMode(QGraphicsView.RubberBandDrag)

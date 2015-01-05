@@ -3,7 +3,7 @@
 from PySide.QtCore import (Qt, QTimer, QSocketNotifier)
 from PySide.QtGui import (QPainter, QBrush, QPalette, QIcon, QTransform)
 from PySide.QtGui import (QApplication, QMainWindow, QMessageBox, QAction,
-    QWidget, QGraphicsItem, QGraphicsScene, QGraphicsView)
+    QGraphicsScene, QGraphicsView)
 
 from zocp import ZOCP
 import zmq
