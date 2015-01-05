@@ -58,6 +58,7 @@ class QNodesEditor(QObject):
         path.lineTo(originSize,0)
         originItem.setPath(path)
         originItem.setPen(QPen(QApplication.palette().window().color().darker(110),2))
+        originItem.setZValue(-2)
         self.scene.addItem(originItem)
 
         self.view = view
