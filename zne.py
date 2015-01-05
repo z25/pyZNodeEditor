@@ -62,6 +62,8 @@ class QNEMainWindow(QMainWindow):
 
         selectAllAct = QAction("Select &All", self, shortcut="Ctrl+A",
             triggered=self.nodesEditor.selectAll)
+        selectNoneAct = QAction("Select &None", self, shortcut="Ctrl+D",
+            triggered=self.nodesEditor.selectNone)
         selectInverseAct = QAction("Select &Inverse", self, shortcut="Ctrl+I",
             triggered=self.nodesEditor.selectInverse)
         deleteSelectedAct = QAction("&Delete Selected", self, shortcut="Del",
@@ -69,11 +71,13 @@ class QNEMainWindow(QMainWindow):
 
         editMenu = self.menuBar().addMenu("&Edit")
         editMenu.addAction(selectAllAct)
+        editMenu.addAction(selectNoneAct)
         editMenu.addAction(selectInverseAct)
         editMenu.addSeparator()
         editMenu.addAction(deleteSelectedAct)
 
         self.view.addAction(selectAllAct)
+        self.view.addAction(selectNoneAct)
         self.view.addAction(selectInverseAct)
         self.view.addAction(deleteSelectedAct)
 
