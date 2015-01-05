@@ -26,7 +26,7 @@
 
 
 from PySide.QtCore import (Qt, QObject, QEvent, QSizeF, QRectF, QPointF)
-from PySide.QtGui import (QPainter)
+from PySide.QtGui import (QBrush, QPainter, QPixmap)
 from PySide.QtGui import (QApplication, QGraphicsView, QGraphicsItem,
     QGraphicsSceneMouseEvent)
 
@@ -39,8 +39,15 @@ class QNodesEditor(QObject):
         super(QNodesEditor, self).__init__(parent)
 
         self.scene = scene
-        self.scene.setBackgroundBrush( QApplication.palette().window() )
         self.scene.installEventFilter(self)
+
+        gridSize = 25
+        gridMap = QPixmap(gridSize,gridSize)
+        gridPainter = QPainter(gridMap)
+        gridPainter.fillRect(0,0,gridSize,gridSize, QApplication.palette().window().color().darker(103))
+        gridPainter.fillRect(0,0,gridSize-3,gridSize-3, QApplication.palette().window())
+        gridPainter.end()
+        self.scene.setBackgroundBrush( QBrush(gridMap) )
 
         self.view = view
         self.view.setDragMode(QGraphicsView.RubberBandDrag)
