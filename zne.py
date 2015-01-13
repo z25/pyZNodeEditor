@@ -23,7 +23,7 @@ class QNEMainWindow(QMainWindow):
         super(QNEMainWindow, self).__init__(parent)
 
         self.logger = logging.getLogger("zne")
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
 
         self.setMinimumSize(560,360)
         self.setWindowTitle("ZOCP Node Editor")
@@ -173,7 +173,7 @@ class QNEMainWindow(QMainWindow):
         self.zocp.signal_subscribe(recv_peer, receiver, emit_peer, emitter)
 
         self.logger.debug("added subscription from %s on %s to %s on %s" %
-               (receiver, toBlock.name(), emitter, fromBlock.name()))
+               (receiver, fromBlock.name(), emitter, toBlock.name()))
 
 
     def onRemoveConnection(self, connection, fromPort, toPort):
@@ -188,7 +188,7 @@ class QNEMainWindow(QMainWindow):
         self.zocp.signal_unsubscribe(recv_peer, receiver, emit_peer, emitter)
 
         self.logger.debug("removed subscription from %s on %s to %s on %s" %
-               (receiver, toBlock.name(), emitter, fromBlock.name()))
+               (receiver, fromBlock.name(), emitter, toBlock.name()))
 
 
     def onBlockMoved(self, block):
@@ -292,13 +292,17 @@ class QNEMainWindow(QMainWindow):
         # check if any current connections should be removed
         connections = port.connections()
         for connection in connections:
-            if(connection.port1().isOutput()):
+            if(connection.port1() == port1):
                 port2 = connection.port2()
             else:
                 port2 = connection.port1()
-            subscriber = [port2.block().uuid().hex, port2.portName()]
-            if subscriber not in subscribers:
-                connection.delete()
+
+            if not port2.isOutput():
+                subscriber = [port2.block().uuid().hex, port2.portName()]
+                if subscriber not in subscribers:
+                    connection.delete()
+                    self.logger.debug("peer removed subscription from %s on %s to %s on %s" %
+                        (port1.portName(), port1.block().name(), port2.portName(), port2.block().name()))
 
         # add new connections for new subscriptions
         for subscriber in subscribers:
@@ -315,6 +319,8 @@ class QNEMainWindow(QMainWindow):
                         connection.updatePosFromPorts()
                         connection.updatePath()
                         self.scene.addItem(connection)
+                        self.logger.debug("peer added subscription from %s on %s to %s on %s" %
+                            (port1.portName(), port1.block().name(), port2.portName(), port2.block().name()))
                     continue
 
             # if the connection could not be made yet, add it to a list of
