@@ -16,8 +16,6 @@ from qneblock import QNEBlock
 from qneport import QNEPort
 from qneconnection import QNEConnection
 
-from zconfigmanager import ZConfigManagerNode
-
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
         super(QNEMainWindow, self).__init__(parent)
@@ -58,16 +56,11 @@ class QNEMainWindow(QMainWindow):
     def installActions(self):
         quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
             statusTip="Exit the application", triggered=self.close)
-        saveAct = QAction("&Save", self, shortcut="Ctrl+S",
-            statusTip="Write a description of the network to disc", triggered=self.writeNetwork)
 
         fileMenu = self.menuBar().addMenu("&File")
-        fileMenu.addAction(saveAct)
-        fileMenu.addSeparator()
         fileMenu.addAction(quitAct)
 
         # for shortcuts
-        self.view.addAction(saveAct)
         self.view.addAction(quitAct)
 
         selectAllAct = QAction("Select &All", self, shortcut="Ctrl+A",
@@ -115,22 +108,6 @@ class QNEMainWindow(QMainWindow):
         helpMenu.addAction(aboutAct)
 
         self.view.addAction(aboutAct)
-
-
-    def writeNetwork(self):
-        fileName, filtr = QFileDialog.getSaveFileName(self)
-        if fileName:
-            # setup ZOCP node, and run it for some time to discover
-            # the current network
-            configManager = ZConfigManagerNode("ConfigManager@%s" % socket.gethostname())
-            configManager.discover(0.5)
-            tree = configManager.build_network_tree()
-
-            # write network description to file
-            configManager.write(fileName, tree)
-
-            # shut down ZOCP node
-            configManager.stop()
 
 
     def zoomIn(self):
