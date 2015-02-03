@@ -11,3 +11,21 @@ See ALGOholic for more information:
 http://algoholic.eu/qnodeseditor-qt-nodesports-based-data-processing-flow-editor/  
 The original port can be found here:  
 https://github.com/fieldOfView/pyQNodesEditor  
+
+
+Installation Notes
+--------------
+To get the pyNodeEditor up and running you need to install the following:
+
+* PySide
+* QT version 4 (for example 4.8.6)
+
+Quick Instalaltion on OSX
+--------------
+assuming you have python 3 installed..
+
+1. Download and install QT (http://download.qt.io/archive/qt/4.8/4.8.6/)
+2. Install PySide
+```
+pip3 install PySide
+```
