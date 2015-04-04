@@ -174,6 +174,13 @@ class QNEMainWindow(QMainWindow):
         self.zocp.peer_set(peer, {"_zne_position": [pos.x(), pos.y()]})
 
 
+    def onChangeValue(self, block, port, value):
+        self.logger.debug("block %s port %s changed to %s" % (block.name(), port.portName(), value))
+        peer = block.uuid()
+        self.zocp.peer_set(peer, {port.portName(): {"value": value}})
+
+
+
     #########################################
     # ZOCP implementation
     #########################################
@@ -204,13 +211,16 @@ class QNEMainWindow(QMainWindow):
         self.zocp.signal_subscribe(self.zocp.get_uuid(), None, peer, None)
 
         # Add named block; ports are not known at this point
+        block = QNEBlock(None)
+        self.scene.addItem(block)
+        block.setNodeEditor(self)
+        block.setName(name)
+        block.setUuid(peer)
+        block.addPort(name, False, False, QNEPort.NamePort)
+        block.setVisible(False)
+
         node = {}
-        node["block"] = QNEBlock(None)
-        self.scene.addItem(node["block"])
-        node["block"].setName(name)
-        node["block"].setUuid(peer)
-        node["block"].addPort(name, False, False, QNEPort.NamePort)
-        node["block"].setVisible(False)
+        node["block"] = block
         node["ports"] = dict()
 
         self.nodes[peer.hex] = node
