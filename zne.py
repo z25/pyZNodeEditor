@@ -177,7 +177,44 @@ class QNEMainWindow(QMainWindow):
     def onChangeValue(self, block, port, value):
         self.logger.debug("block %s port %s changed to %s" % (block.name(), port.portName(), value))
         peer = block.uuid()
-        self.zocp.peer_set(peer, {port.portName(): {"value": value}})
+        portName = port.portName()
+        capability = self.zocp.peers_capabilities[peer][portName]
+        typeHint = capability["typeHint"]
+        validValue = True
+        if typeHint == "int":
+            try:
+                value = int(float(value))
+            except:
+                validValue = False
+        elif typeHint == "flt":
+            try:
+                value = float(value.strip())
+            except:
+                validValue = False
+        elif typeHint == "percent":
+            try:
+                value = float(value.strip())
+            except:
+                validValue = False
+        elif typeHint == "bool":
+            value = (value.strip() in ["true", "yes", "1"])
+        elif typeHint == "string":
+            pass
+        elif typeHint == "vec2f" or typeHint == "vec3f" or typeHint == "vec4f":
+            try:
+                value = [float(num) for num in ((value.strip())[1:-1]).split(",")]
+            except:
+                validValue = False
+
+            if validValue:
+                if len(value) != int(typeHint[3]):
+                    validValue = False
+
+        if validValue:
+            self.zocp.peer_set(peer, {portName: {"value": value}})
+            port.setValue(str(value))
+        else:
+            port.setValue(str(capability["value"]))
 
 
 

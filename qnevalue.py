@@ -39,8 +39,10 @@ class QNEValue(QGraphicsTextItem):
         self.setTextWidth(-1)
         self.setTabChangesFocus(True)
         self.setTextInteractionFlags(Qt.TextEditorInteraction)
+        self.setZValue(1)
 
         self.port = None
+        self.value = None
 
 
     def __del__(self):
@@ -65,19 +67,22 @@ class QNEValue(QGraphicsTextItem):
 
     def focusInEvent(self, event):
         super(QNEValue, self).focusInEvent(event)
-        self.value_ = self.toPlainText()
+        self.setPlainText(self.value)
 
 
     def focusOutEvent(self, event):
         super(QNEValue, self).focusOutEvent(event)
         value = self.toPlainText()
-        if self.value_ != value:
+        if self.value != value:
             port = self.port;
             block = self.port.block()
-            block.nodeEditor().onChangeValue(block, port, value) 
+            block.nodeEditor().onChangeValue(block, port, value)
+        self.showValue(self.value)
 
 
     def showValue(self, value):
+        self.value = value
+
         value_ = value
         if len(value) > 9:
             value_ = value[:6] + "..."
