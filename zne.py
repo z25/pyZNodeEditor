@@ -174,6 +174,50 @@ class QNEMainWindow(QMainWindow):
         self.zocp.peer_set(peer, {"_zne_position": [pos.x(), pos.y()]})
 
 
+    def onChangeValue(self, block, port, value):
+        self.logger.debug("block %s port %s changed to %s" % (block.name(), port.portName(), value))
+        peer = block.uuid()
+        portName = port.portName()
+        capability = self.zocp.peers_capabilities[peer][portName]
+        typeHint = capability["typeHint"]
+        validValue = True
+        if typeHint == "int":
+            try:
+                value = int(float(value))
+            except:
+                validValue = False
+        elif typeHint == "flt":
+            try:
+                value = float(value.strip())
+            except:
+                validValue = False
+        elif typeHint == "percent":
+            try:
+                value = float(value.strip())
+            except:
+                validValue = False
+        elif typeHint == "bool":
+            value = (value.strip() in ["true", "yes", "1"])
+        elif typeHint == "string":
+            pass
+        elif typeHint == "vec2f" or typeHint == "vec3f" or typeHint == "vec4f":
+            try:
+                value = [float(num) for num in ((value.strip())[1:-1]).split(",")]
+            except:
+                validValue = False
+
+            if validValue:
+                if len(value) != int(typeHint[3]):
+                    validValue = False
+
+        if validValue:
+            self.zocp.peer_set(peer, {portName: {"value": value}})
+            port.setValue(str(value))
+        else:
+            port.setValue(str(capability["value"]))
+
+
+
     #########################################
     # ZOCP implementation
     #########################################
@@ -204,13 +248,16 @@ class QNEMainWindow(QMainWindow):
         self.zocp.signal_subscribe(self.zocp.get_uuid(), None, peer, None)
 
         # Add named block; ports are not known at this point
+        block = QNEBlock(None)
+        self.scene.addItem(block)
+        block.setNodeEditor(self)
+        block.setName(name)
+        block.setUuid(peer)
+        block.addPort(name, False, False, QNEPort.NamePort)
+        block.setVisible(False)
+
         node = {}
-        node["block"] = QNEBlock(None)
-        self.scene.addItem(node["block"])
-        node["block"].setName(name)
-        node["block"].setUuid(peer)
-        node["block"].addPort(name, False, False, QNEPort.NamePort)
-        node["block"].setVisible(False)
+        node["block"] = block
         node["ports"] = dict()
 
         self.nodes[peer.hex] = node
