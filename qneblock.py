@@ -38,6 +38,7 @@ class QNEBlock(QGraphicsPathItem):
     def __init__(self, parent):
         super(QNEBlock, self).__init__(parent)
 
+        self.m_nodeEditor = None
         self.m_name = ""
         self.m_uuid = ""
 
@@ -205,3 +206,11 @@ class QNEBlock(QGraphicsPathItem):
 
     def uuid(self):
         return self.m_uuid
+
+
+    def setNodeEditor(self, editor):
+        self.m_nodeEditor = editor
+
+
+    def nodeEditor(self):
+        return self.m_nodeEditor

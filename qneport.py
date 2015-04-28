@@ -31,6 +31,8 @@ from PySide.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPen,
 from PySide.QtGui import (QApplication, QGraphicsItem, QGraphicsPathItem, 
     QGraphicsTextItem)
 
+from qnevalue import QNEValue
+
 class QNEPort(QGraphicsPathItem):
     (NamePort, TypePort) = (1, 2)
     (Type) = (QGraphicsItem.UserType +1)
@@ -43,15 +45,13 @@ class QNEPort(QGraphicsPathItem):
         self.margin = 3
         self.widgetWidth = 50
 
-        self.valueText = QGraphicsTextItem(self)
-        self.valueText.setTextWidth(self.widgetWidth)
-        #self.valueText.setTextInteractionFlags(Qt.TextEditorInteraction)
-        #self.valueText.setTabChangesFocus(True)
-
         self.setPen(QPen(QApplication.palette().text().color(), 1))
         self.setBrush(QApplication.palette().highlight())
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
         
+        self.valueText = QNEValue(self)
+        self.valueText.setPort(self)
+
         self.outputPort = QNEOutputPort(self)
 
         self.m_portFlags = 0
@@ -84,10 +84,7 @@ class QNEPort(QGraphicsPathItem):
 
     def setValue(self, value):
         self.value = value
-        value_ = value
-        if len(value) > 9:
-            value_ = value[:6] + "..."
-        self.valueText.setPlainText(value_)
+        self.valueText.showValue(value)
 
 
     def setCanConnect(self, hasInput, hasOutput):
