@@ -1,0 +1,3 @@
+[submodule "pyZConfigManager"]
+    path = zconfigmanager
+    url = https://github.com/fieldofview/pyZConfigManager.git
