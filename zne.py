@@ -16,6 +16,8 @@ from qneblock import QNEBlock
 from qneport import QNEPort
 from qneconnection import QNEConnection
 
+from zconfigmanager import ZConfigManagerNode
+
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
         super(QNEMainWindow, self).__init__(parent)
