@@ -16,6 +16,8 @@ from qneblock import QNEBlock
 from qneport import QNEPort
 from qneconnection import QNEConnection
 
+from zconfigmanager import ZConfigManagerNode
+
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
         super(QNEMainWindow, self).__init__(parent)
@@ -56,8 +58,15 @@ class QNEMainWindow(QMainWindow):
     def installActions(self):
         quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
             statusTip="Exit the application", triggered=self.close)
+        openAct = QAction("&Open...", self, shortcut="Ctrl+O",
+            statusTip="Restore the network from a saved description", triggered=self.readNetwork)
+        saveAct = QAction("&Save...", self, shortcut="Ctrl+S",
+            statusTip="Write a description of the network to disc", triggered=self.writeNetwork)
 
         fileMenu = self.menuBar().addMenu("&File")
+        fileMenu.addAction(openAct)
+        fileMenu.addAction(saveAct)
+        fileMenu.addSeparator()
         fileMenu.addAction(quitAct)
 
         # for shortcuts
@@ -108,6 +117,44 @@ class QNEMainWindow(QMainWindow):
         helpMenu.addAction(aboutAct)
 
         self.view.addAction(aboutAct)
+
+
+    def writeNetwork(self):
+        fileName, filter = QFileDialog.getSaveFileName(self,
+                                                       caption="Save as",
+                                                       filter="ZOCP (*.zocp);;JSON (*.json)",
+                                                       selectedFilter="ZOCP (*.zocp)")
+        if fileName:
+            # setup ZOCP node, and run it for some time to discover
+            # the current network
+            configManager = ZConfigManagerNode("ConfigManager@%s" % socket.gethostname())
+            configManager.discover(0.5)
+
+            # write network description to file
+            configManager.write(fileName)
+
+            # shut down ZOCP node
+            configManager.stop()
+            configManager = None
+
+
+    def readNetwork(self):
+        fileName, filter = QFileDialog.getOpenFileName(self,
+                                                       caption="Open",
+                                                       filter="All files (*.*);;ZOCP (*.zocp);;JSON (*.json)",
+                                                       selectedFilter="ZOCP (*.zocp)")
+        if fileName:
+            # setup ZOCP node, and run it for some time to discover
+            # the current network
+            configManager = ZConfigManagerNode("ConfigManager@%s" % socket.gethostname())
+            configManager.discover(0.5)
+
+            # write network description to file
+            configManager.read(fileName)
+
+            # shut down ZOCP node
+            configManager.stop()
+            configManager = None
 
 
     def zoomIn(self):
