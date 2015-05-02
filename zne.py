@@ -16,7 +16,14 @@ from qneblock import QNEBlock
 from qneport import QNEPort
 from qneconnection import QNEConnection
 
-from zconfigmanager import ZConfigManagerNode
+try:
+    from zconfigmanager import ZConfigManagerNode
+    zconfigmanager_found = True
+except ImportError:
+    print ("Could not find ZConfigManagerNode class. "
+           "Load/Save functionality will not be available. Please follow "
+           "the instruction in the README to add this class.")
+    zconfigmanager_found = False
 
 class QNEMainWindow(QMainWindow):
     def __init__(self, parent):
@@ -58,15 +65,17 @@ class QNEMainWindow(QMainWindow):
     def installActions(self):
         quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
             statusTip="Exit the application", triggered=self.close)
-        openAct = QAction("&Open...", self, shortcut="Ctrl+O",
-            statusTip="Restore the network from a saved description", triggered=self.readNetwork)
-        saveAct = QAction("&Save...", self, shortcut="Ctrl+S",
-            statusTip="Write a description of the network to disc", triggered=self.writeNetwork)
+        if zconfigmanager_found:
+            openAct = QAction("&Open...", self, shortcut="Ctrl+O",
+                statusTip="Restore the network from a saved description", triggered=self.readNetwork)
+            saveAct = QAction("&Save...", self, shortcut="Ctrl+S",
+                statusTip="Write a description of the network to disc", triggered=self.writeNetwork)
 
         fileMenu = self.menuBar().addMenu("&File")
-        fileMenu.addAction(openAct)
-        fileMenu.addAction(saveAct)
-        fileMenu.addSeparator()
+        if zconfigmanager_found:
+            fileMenu.addAction(openAct)
+            fileMenu.addAction(saveAct)
+            fileMenu.addSeparator()
         fileMenu.addAction(quitAct)
 
         # for shortcuts

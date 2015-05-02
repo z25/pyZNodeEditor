@@ -7,6 +7,17 @@ development at z25.org. For more information see https://github.com/z25/pyZOCP
 
 Installation Notes
 ------------------
+pyZNodeEditor has a submodule for saving/loading network configurations named pyZConfigManager. Make sure the zconfigmanager folder contains the required files.
+If you are cloning a copy from git, be sure to add the --recursive option:
+```
+git clone --recursive https://github.com/z25/pyZNodeEditor.git
+```
+If you have previously checked out a copy of the editor, you can add the files by executing the following commands in the pyZNodeEditor folder:
+```
+git submodule init
+git submodule update
+```
+
 pyZNodeEditor depends on the python implementation of ZOCP. You must first install pyZOCP:
 https://github.com/z25/pyZOCP/blob/master/README.textile
 To get the pyNodeEditor up and running you need to install the following:
