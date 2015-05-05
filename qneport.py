@@ -87,6 +87,10 @@ class QNEPort(QGraphicsPathItem):
         self.valueText.showValue(value)
 
 
+    def setAccess(self, access):
+        self.valueText.setAccess(access)
+
+
     def setCanConnect(self, hasInput, hasOutput):
         self.hasInput_ = hasInput
         self.hasOutput_ = hasOutput
