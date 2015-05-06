@@ -37,8 +37,6 @@ class QNEValue(QGraphicsTextItem):
         super(QNEValue, self).__init__(parent)
 
         self.setTextWidth(-1)
-        self.setTabChangesFocus(True)
-        self.setTextInteractionFlags(Qt.TextEditorInteraction)
         self.setZValue(1)
 
         self.port = None
@@ -52,6 +50,20 @@ class QNEValue(QGraphicsTextItem):
 
     def setPort(self, port):
         self.port = port
+
+
+    def setAccess(self, access):
+        if 'r' in access:
+            self.setVisible(True)
+        else:
+            self.setVisible(False)
+
+        if 'w' in access:
+            self.setTabChangesFocus(True)
+            self.setTextInteractionFlags(Qt.TextEditorInteraction)
+        else:
+            self.setTabChangesFocus(False)
+            self.setTextInteractionFlags(Qt.NoTextInteraction)
 
 
     def port(self):

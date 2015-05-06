@@ -339,6 +339,7 @@ class QNEMainWindow(QMainWindow):
                     hasOutput = "e" in portdata["access"]
                     port = self.nodes[peer.hex]["block"].addPort(portname, hasInput, hasOutput)
                     port.setValue(str(portdata["value"]))
+                    port.setAccess(str(portdata["access"]))
                     self.nodes[peer.hex]["ports"][portname] = port
 
                 else:
@@ -351,6 +352,8 @@ class QNEMainWindow(QMainWindow):
                 port = self.nodes[peer.hex]["ports"][portname]
                 if "value" in portdata:
                     port.setValue(str(portdata["value"]))
+                if "access" in portdata:
+                    port.setAccess(str(portdata["access"]))
 
             if "subscribers" in portdata:
                 self.updateSubscribers(port, portdata["subscribers"])
