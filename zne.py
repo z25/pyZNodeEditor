@@ -253,7 +253,7 @@ class QNEMainWindow(QMainWindow):
             except:
                 validValue = False
         elif typeHint == "bool":
-            value = (value.strip() in ["true", "yes", "1"])
+            value = (value.strip().lower() in ["true", "yes", "1"])
         elif typeHint == "string":
             pass
         elif typeHint == "vec2f" or typeHint == "vec3f" or typeHint == "vec4f":
