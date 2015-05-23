@@ -256,7 +256,7 @@ class QNEMainWindow(QMainWindow):
             value = (value.strip().lower() in ["true", "yes", "1"])
         elif typeHint == "string":
             pass
-        elif typeHint == "vec2f" or typeHint == "vec3f" or typeHint == "vec4f":
+        elif typeHint.startswith("vec" ) and typeHint.endswith("f") and len(typeHint) == 5:
             try:
                 value = [float(num) for num in ((value.strip())[1:-1]).split(",")]
             except:
