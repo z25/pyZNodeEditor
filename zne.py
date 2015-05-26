@@ -278,8 +278,7 @@ class QNEMainWindow(QMainWindow):
     # ZOCP implementation
     #########################################
     def initZOCP(self):
-        self.zocp = ZOCP()
-        self.zocp.set_name("ZOCP Node Editor@%s" % socket.gethostname())
+        self.zocp = ZOCP("ZOCP Node Editor@%s" % socket.gethostname())
         self.notifier = QSocketNotifier(
             self.zocp.inbox.getsockopt(zmq.FD),
             QSocketNotifier.Read)
@@ -301,7 +300,7 @@ class QNEMainWindow(QMainWindow):
 
     def onPeerEnter(self, peer, name, *args, **kwargs):
         # Subscribe to any and all value changes
-        self.zocp.signal_subscribe(self.zocp.get_uuid(), None, peer, None)
+        self.zocp.signal_subscribe(self.zocp.uuid(), None, peer, None)
 
         # Add named block; ports are not known at this point
         block = QNEBlock(None)
@@ -321,7 +320,7 @@ class QNEMainWindow(QMainWindow):
 
     def onPeerExit(self, peer, name, *args, **kwargs):
         # Unsubscribe from value changes
-        self.zocp.signal_unsubscribe(self.zocp.get_uuid(), None, peer, None)
+        self.zocp.signal_unsubscribe(self.zocp.uuid(), None, peer, None)
 
         # Remove block
         if peer.hex in self.nodes:
