@@ -35,6 +35,7 @@ class QNEValue(QGraphicsTextItem):
 
     def __init__(self, parent):
         super(QNEValue, self).__init__(parent)
+        self.parent = parent
 
         self.setTextWidth(-1)
         self.setZValue(1)
@@ -42,10 +43,18 @@ class QNEValue(QGraphicsTextItem):
         self.port = None
         self.value = None
 
+        self.background = QApplication.palette().light().color()
+
 
     def __del__(self):
         #print("Del QNEValue %s" % self.name)
         pass
+
+
+    def paint(self, painter, option, widget):
+        if self.hasFocus():
+            painter.fillRect(option.rect, self.background)
+        super(QNEValue, self).paint(painter, option, widget)
 
 
     def setPort(self, port):
@@ -80,6 +89,7 @@ class QNEValue(QGraphicsTextItem):
     def focusInEvent(self, event):
         super(QNEValue, self).focusInEvent(event)
         self.setPlainText(self.value)
+        self.parent.setZValue(1)
 
 
     def focusOutEvent(self, event):
@@ -90,6 +100,7 @@ class QNEValue(QGraphicsTextItem):
             block = self.port.block()
             block.nodeEditor().onChangeValue(block, port, value)
         self.showValue(self.value)
+        self.parent.setZValue(0)
 
 
     def showValue(self, value):
