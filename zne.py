@@ -198,10 +198,10 @@ class QNEMainWindow(QMainWindow):
         fromBlock = fromPort.block()
         toBlock = toPort.block()
 
-        emitter = toPort.portName()
-        emit_peer = toBlock.uuid()
-        receiver = fromPort.portName()
-        recv_peer = fromBlock.uuid()
+        emitter = fromPort.portName()
+        emit_peer = fromBlock.uuid()
+        receiver = toPort.portName()
+        recv_peer = toBlock.uuid()
 
         self.zocp.signal_subscribe(recv_peer, receiver, emit_peer, emitter)
 
